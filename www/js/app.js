@@ -1,83 +1,109 @@
-// Ionic Starter App
+var pibot = angular.module('pibot', ['ionic']);
 
-// angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
-// the 2nd parameter is an array of 'requires'
-// 'starter.services' is found in services.js
-// 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
-
-.run(function($ionicPlatform) {
-  $ionicPlatform.ready(function() {
-    // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
-    // for form inputs)
-    if (window.cordova && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-    }
-    if (window.StatusBar) {
-      // org.apache.cordova.statusbar required
-      StatusBar.styleDefault();
-    }
-  });
-})
-
-.config(function($stateProvider, $urlRouterProvider) {
-
-  // Ionic uses AngularUI Router which uses the concept of states
-  // Learn more here: https://github.com/angular-ui/ui-router
-  // Set up the various states which the app can be in.
-  // Each state's controller can be found in controllers.js
-  $stateProvider
-
-  // setup an abstract state for the tabs directive
-    .state('tab', {
-    url: "/tab",
-    abstract: true,
-    templateUrl: "templates/tabs.html"
-  })
-
-  // Each tab has its own nav history stack:
-
-  .state('tab.dash', {
-    url: '/dash',
-    views: {
-      'tab-dash': {
-        templateUrl: 'templates/tab-dash.html',
-        controller: 'DashCtrl'
-      }
-    }
-  })
-
-  .state('tab.chats', {
-      url: '/chats',
-      views: {
-        'tab-chats': {
-          templateUrl: 'templates/tab-chats.html',
-          controller: 'ChatsCtrl'
+pibot.run(function ($ionicPlatform) {
+    $ionicPlatform.ready(function () {
+        if (window.cordova && window.cordova.plugins.Keyboard) {
+            cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
         }
-      }
-    })
-    .state('tab.chat-detail', {
-      url: '/chats/:chatId',
-      views: {
-        'tab-chats': {
-          templateUrl: 'templates/chat-detail.html',
-          controller: 'ChatDetailCtrl'
+        if (window.StatusBar) {
+            StatusBar.styleDefault();
         }
-      }
-    })
-
-  .state('tab.account', {
-    url: '/account',
-    views: {
-      'tab-account': {
-        templateUrl: 'templates/tab-account.html',
-        controller: 'AccountCtrl'
-      }
-    }
-  });
-
-  // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/dash');
+    });
 
 });
+
+
+pibot.constant('baseUrl', 'http://192.168.1.4:5000/api');
+
+pibot.factory('program', Program);
+
+pibot.controller('MainCtrl', MainCtrl);
+
+function MainCtrl(program) {
+    var self = this;
+    program.list().then(function(list) {
+        self.list = list;
+    });
+
+    self.forward = function() {
+       program.forward(10).then(function(list) {
+           self.list = list;
+       });
+    };
+
+    self.right = function() {
+        program.right(10).then(function(list) {
+            self.list = list;
+        });
+    };
+
+    self.left = function() {
+        program.left(10).then(function(list) {
+            self.list = list;
+        });
+    };
+
+    self.go = function() {
+        program.go().then(function(list) {
+            self.list = list;
+        });
+    };
+}
+
+function Program(baseUrl, $http, $q) {
+    return {
+        list: function() {
+            var deferred = $q.defer();
+            $http.get(baseUrl + '/list').success(function (data) {
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+
+        },
+
+        forward: function(dist) {
+            var deferred = $q.defer();
+            $http.get(baseUrl + '/forward?dist=' + dist).success(function (data) {
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+
+
+        },
+
+        right: function(dist) {
+            var deferred = $q.defer();
+            $http.get(baseUrl + '/right?dist=' + dist).success(function (data) {
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+
+
+        },
+
+        left: function(dist) {
+            var deferred = $q.defer();
+            $http.get(baseUrl + '/left?dist=' + dist).success(function (data) {
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+
+
+        },
+
+        go: function() {
+            var deferred = $q.defer();
+            $http.get(baseUrl + '/go').success(function (data) {
+                deferred.resolve(data);
+            });
+            return deferred.promise;
+
+
+        }
+
+
+
+    };
+
+}
+
